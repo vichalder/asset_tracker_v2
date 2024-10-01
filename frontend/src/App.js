@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import DeviceList from './pages/DeviceList';
 import MapView from './pages/MapView';
@@ -12,12 +12,12 @@ function App() {
     <Router>
       <div className="App">
         <Navbar />
-        <Switch>
-          <Route exact path="/" component={DeviceList} />
-          <Route path="/map" component={MapView} />
-          <Route path="/historical" component={HistoricalView} />
-          <Route path="/geofencing" component={Geofencing} />
-        </Switch>
+        <Routes>
+          <Route path="/" element={<DeviceList />} />
+          <Route path="/map" element={<MapView />} />
+          <Route path="/historical" element={<HistoricalView />} />
+          <Route path="/geofencing" element={<Geofencing />} />
+        </Routes>
       </div>
     </Router>
   );

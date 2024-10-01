@@ -5,19 +5,26 @@ import 'leaflet/dist/leaflet.css';
 
 function MapView() {
   const [devices, setDevices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDevices = async () => {
       try {
         const response = await axios.get('http://localhost:3000/api/devices');
         setDevices(response.data);
-      } catch (error) {
-        console.error('Error fetching devices:', error);
+        setLoading(false);
+      } catch (err) {
+        setError('Error fetching devices. Please try again later.');
+        setLoading(false);
       }
     };
 
     fetchDevices();
   }, []);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div>
