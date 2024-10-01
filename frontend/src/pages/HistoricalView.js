@@ -7,14 +7,18 @@ function HistoricalView() {
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const [historicalData, setHistoricalData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchDevices = async () => {
       try {
         const response = await axios.get('http://localhost:3000/api/devices');
         setDevices(response.data);
-      } catch (error) {
-        console.error('Error fetching devices:', error);
+        setLoading(false);
+      } catch (err) {
+        setError('Error fetching devices. Please try again later.');
+        setLoading(false);
       }
     };
 
@@ -25,8 +29,8 @@ function HistoricalView() {
     try {
       const response = await axios.get(`http://localhost:3000/api/devices/${deviceId}/history`);
       setHistoricalData(response.data);
-    } catch (error) {
-      console.error('Error fetching historical data:', error);
+    } catch (err) {
+      setError('Error fetching historical data. Please try again later.');
     }
   };
 
@@ -39,6 +43,9 @@ function HistoricalView() {
       setHistoricalData([]);
     }
   };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   const positions = historicalData.map(point => [point.latitude, point.longitude]);
 
