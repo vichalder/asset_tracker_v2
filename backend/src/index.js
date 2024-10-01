@@ -16,14 +16,24 @@ app.get('/', (req, res) => {
   res.send('GNSS Device Tracker API');
 });
 
-db.connect()
-  .then(() => {
+async function startServer() {
+  try {
+    console.log('Starting server...');
+    console.log('Environment variables:');
+    console.log(`DB_HOST: ${process.env.DB_HOST}`);
+    console.log(`DB_USER: ${process.env.DB_USER}`);
+    console.log(`DB_NAME: ${process.env.DB_NAME}`);
+    console.log(`PORT: ${process.env.PORT}`);
+
+    await db.connect();
     console.log('Connected to database');
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });
-  })
-  .catch((err) => {
-    console.error('Failed to connect to database:', err);
+  } catch (err) {
+    console.error('Failed to start server:', err);
     process.exit(1);
-  });
+  }
+}
+
+startServer();

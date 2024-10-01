@@ -7,15 +7,39 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  connectTimeout: 60000, // 60 seconds
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
-async function connect() {
+async function connect(retries = 5) {
   try {
-    await pool.getConnection();
-    console.log('Connected to MySQL database');
+    console.log('Attempting to connect to MySQL database...');
+    console.log(`Host: ${process.env.DB_HOST}`);
+    console.log(`User: ${process.env.DB_USER}`);
+    console.log(`Database: ${process.env.DB_NAME}`);
+    
+    const connection = await pool.getConnection();
+    console.log('Successfully connected to MySQL database');
+    connection.release();
   } catch (err) {
     console.error('Error connecting to MySQL database:', err);
+    if (err.code === 'ETIMEDOUT') {
+      console.error('Connection timed out. Please check if the database server is running and accessible.');
+    } else if (err.code === 'ER_ACCESS_DENIED_ERROR') {
+      console.error('Access denied. Please check your database username and password.');
+    } else if (err.code === 'ENOTFOUND') {
+      console.error('Host not found. Please check your database host address.');
+    }
+    
+    if (retries > 0) {
+      console.log(`Retrying connection in 5 seconds... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      return connect(retries - 1);
+    }
+    
     throw err;
   }
 }
