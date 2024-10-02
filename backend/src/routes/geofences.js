@@ -37,11 +37,13 @@ router.put('/:id', async (req, res) => {
     );
     res.status(200).json({ id, center, radius });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error updating geofence:', err);
+    res.status(500).json({ error: 'Failed to update geofence' });
   }
 });
 
-// Delete a geofence
+
+// Delete a geofence 
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
