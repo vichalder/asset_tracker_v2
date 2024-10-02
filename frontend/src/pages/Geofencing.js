@@ -14,9 +14,11 @@ function Geofencing() {
     const fetchGeofences = async () => {
       try {
         const response = await axios.get('http://localhost:3000/api/geofences');
+        console.log('Fetched geofences:', response.data); // Log the fetched data
         setGeofences(response.data);
         setLoading(false);
       } catch (err) {
+        console.error('Error fetching geofences:', err);
         setError('Error fetching geofences. Please try again later.');
         setLoading(false);
       }
@@ -34,6 +36,7 @@ function Geofencing() {
       const response = await axios.post('http://localhost:3000/api/geofences', newGeofence);
       setGeofences([...geofences, response.data]);
     } catch (err) {
+      console.error('Error creating geofence:', err);
       setError('Error creating geofence. Please try again.');
     }
   };
@@ -48,6 +51,7 @@ function Geofencing() {
         await axios.put(`http://localhost:3000/api/geofences/${_leaflet_id}`, updatedGeofence);
         setGeofences(geofences.map(g => g.id === _leaflet_id ? { ...g, ...updatedGeofence } : g));
       } catch (err) {
+        console.error('Error updating geofence:', err);
         setError('Error updating geofence. Please try again.');
       }
     });
@@ -62,6 +66,7 @@ function Geofencing() {
         await axios.delete(`http://localhost:3000/api/geofences/${_leaflet_id}`);
         setGeofences(geofences.filter(g => g.id !== _leaflet_id));
       } catch (err) {
+        console.error('Error deleting geofence:', err);
         setError('Error deleting geofence. Please try again.');
       }
     });
@@ -73,39 +78,48 @@ function Geofencing() {
   return (
     <div>
       <h1>Geofencing</h1>
-      <MapContainer center={[0, 0]} zoom={2} style={{ height: '500px', width: '100%' }}>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        <FeatureGroup>
-          <EditControl
-            position="topright"
-            onCreated={handleCreated}
-            onEdited={handleEdited}
-            onDeleted={handleDeleted}
-            draw={{
-              rectangle: false,
-              polygon: false,
-              polyline: false,
-              marker: false,
-              circlemarker: false,
-            }}
+      <div className="map-container">
+        <MapContainer center={[51.1657, 10.4515]} zoom={6} style={{ height: '400px', width: '100%' }}>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          {geofences.map((geofence) => (
-            <Circle 
-              key={geofence.id} 
-              center={[geofence.center.lat, geofence.center.lng]} 
-              radius={geofence.radius} 
+          <FeatureGroup>
+            <EditControl
+              position="topright"
+              onCreated={handleCreated}
+              onEdited={handleEdited}
+              onDeleted={handleDeleted}
+              draw={{
+                rectangle: false,
+                polygon: false,
+                polyline: false,
+                marker: false,
+                circlemarker: false,
+              }}
             />
-          ))}
-        </FeatureGroup>
-      </MapContainer>
+            {geofences.map((geofence) => (
+              geofence && geofence.center && (
+                <Circle 
+                  key={geofence.id} 
+                  center={[geofence.center.lat || 0, geofence.center.lng || 0]} 
+                  radius={geofence.radius || 0} 
+                />
+              )
+            ))}
+          </FeatureGroup>
+        </MapContainer>
+      </div>
       <div>
         <h2>Geofences:</h2>
         <ul>
           {geofences.map((geofence) => (
-            <li key={geofence.id}>
-              Center: {geofence.center.lat.toFixed(6)}, {geofence.center.lng.toFixed(6)} - 
-              Radius: {geofence.radius.toFixed(2)}m
-            </li>
+            geofence && geofence.center && (
+              <li key={geofence.id}>
+                Center: {geofence.center.lat.toFixed(6)}, {geofence.center.lng.toFixed(6)} - 
+                Radius: {geofence.radius.toFixed(2)}m
+              </li>
+            )
           ))}
         </ul>
       </div>

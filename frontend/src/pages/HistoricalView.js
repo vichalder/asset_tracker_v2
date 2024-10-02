@@ -59,10 +59,15 @@ function HistoricalView() {
         ))}
       </select>
       {selectedDevice && (
-        <MapContainer center={positions[0] || [0, 0]} zoom={13} style={{ height: '500px', width: '100%' }}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <Polyline positions={positions} />
-        </MapContainer>
+        <div className="map-container">
+          <MapContainer center={positions[0] || [51.1657, 10.4515]} zoom={6} style={{ height: '400px', width: '100%' }}>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <Polyline positions={positions} />
+          </MapContainer>
+        </div>
       )}
     </div>
   );

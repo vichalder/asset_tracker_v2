@@ -11,7 +11,9 @@ asset_tracker_v2/
 │   │   ├── index.js
 │   │   ├── db.js
 │   │   └── routes/
-│   │       └── devices.js
+│   │       ├── devices.js
+│   │       └── geofences.js
+│   ├── db_schema.sql
 │   ├── package.json
 │   └── .env
 ├── frontend/
@@ -53,7 +55,11 @@ asset_tracker_v2/
    PORT=3000
    ```
 
-4. Start the server:
+4. Set up the database schema:
+   - Connect to your MySQL database
+   - Run the SQL commands in `backend/db_schema.sql`
+
+5. Start the server:
    ```
    npm start
    ```
@@ -78,27 +84,10 @@ asset_tracker_v2/
 ### Database Setup
 
 1. Set up a Google Cloud MySQL database.
-2. Create the necessary tables using the following SQL commands:
+2. Use the `backend/db_schema.sql` file to create the necessary tables. You can run this file using a MySQL client or the MySQL command line tool:
 
-   ```sql
-   CREATE TABLE devices (
-     id INT AUTO_INCREMENT PRIMARY KEY,
-     name VARCHAR(255) NOT NULL,
-     type VARCHAR(50) NOT NULL,
-     status VARCHAR(50) NOT NULL,
-     last_latitude DECIMAL(10, 8),
-     last_longitude DECIMAL(11, 8),
-     last_seen DATETIME
-   );
-
-   CREATE TABLE device_history (
-     id INT AUTO_INCREMENT PRIMARY KEY,
-     device_id INT,
-     latitude DECIMAL(10, 8) NOT NULL,
-     longitude DECIMAL(11, 8) NOT NULL,
-     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-     FOREIGN KEY (device_id) REFERENCES devices(id)
-   );
+   ```
+   mysql -h your_host -u your_user -p your_database < backend/db_schema.sql
    ```
 
 ### Device Setup
@@ -110,7 +99,11 @@ asset_tracker_v2/
    - TinyGPS++
    - TinyGSM
    - ArduinoJson
-3. Update the APN settings and server URL in the code.
+3. Update the following in the code:
+   - APN settings for your cellular provider
+   - `server` variable with your backend server's IP address or domain
+   - `port` variable with your backend server's port (default is 3000)
+   - `deviceId` variable with a unique ID for this device
 4. Flash the code to your ESP32 device.
 
 #### Cortex-M4
@@ -121,7 +114,10 @@ asset_tracker_v2/
    - STM32 HAL
    - LwIP
    - minmea
-4. Update the server IP and port in the code.
+4. Update the following in the code:
+   - `SERVER_IP` macro with your backend server's IP address or domain
+   - `SERVER_PORT` macro with your backend server's port (default is 3000)
+   - `DEVICE_ID` macro with a unique ID for this device
 5. Compile and flash the code to your Cortex-M4 device.
 
 ## Features
@@ -131,6 +127,22 @@ asset_tracker_v2/
 - Geofencing capabilities
 - Support for both ESP32 and Cortex-M4 based GNSS devices
 
+## Geofencing
+
+The application supports geofencing:
+- Create circular geofences by drawing on the map
+- Edit existing geofences
+- Delete geofences
+- View all current geofences
+
 ## Note
 
 This project is a basic implementation and may require additional security measures and optimizations for production use. Always follow best practices for security when deploying web applications and IoT devices.
+
+## Troubleshooting
+
+If you encounter any issues with device connectivity:
+1. Ensure your backend server is running and accessible from the internet.
+2. Verify that the server IP/domain and port in the device code match your backend setup.
+3. Check that your devices have an active internet connection.
+4. Verify that the API endpoints in the backend match those used in the device code.

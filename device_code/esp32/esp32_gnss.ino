@@ -13,8 +13,11 @@ const char gprsUser[] = "";
 const char gprsPass[] = "";
 
 // Server details
-const char server[] = "your-server-url.com";
-const int port = 80;
+const char server[] = "your-server-ip-or-domain.com";  // Update this with your backend server address
+const int port = 3000;  // Update this with your backend server port
+
+// Device ID
+const int deviceId = 1;  // Update this with the actual device ID
 
 // GNSS module connection
 HardwareSerial gpsSerial(2);  // Use UART2 for GPS
@@ -55,6 +58,7 @@ void loop() {
 
         // Create JSON payload
         DynamicJsonDocument doc(200);
+        doc["deviceId"] = deviceId;
         doc["latitude"] = latitude;
         doc["longitude"] = longitude;
 
@@ -62,7 +66,8 @@ void loop() {
         serializeJson(doc, payload);
 
         // Send data to server
-        http.begin(client, server, port, "/api/devices/1/location");  // Replace '1' with actual device ID
+        String url = String("/api/devices/") + String(deviceId) + String("/location");
+        http.begin(client, server, port, url);
         http.addHeader("Content-Type", "application/json");
 
         int httpResponseCode = http.POST(payload);

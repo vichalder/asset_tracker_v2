@@ -12,11 +12,11 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
 
 // Server details
-#define SERVER_IP "xxx.xxx.xxx.xxx"  // Replace with your server IP
-#define SERVER_PORT 80
+#define SERVER_IP "your-server-ip-or-domain.com"  // Update this with your backend server address
+#define SERVER_PORT 3000  // Update this with your backend server port
 
 // Device ID
-#define DEVICE_ID 1  // Replace with actual device ID
+#define DEVICE_ID 1  // Update this with the actual device ID
 
 // Function prototypes
 void SystemClock_Config(void);
@@ -75,18 +75,19 @@ int main(void)
 
 void send_location_data(float latitude, float longitude)
 {
-  char payload[100];
-  snprintf(payload, sizeof(payload), "{\"latitude\":%.6f,\"longitude\":%.6f}", latitude, longitude);
+  char payload[150];
+  snprintf(payload, sizeof(payload), "{\"deviceId\":%d,\"latitude\":%.6f,\"longitude\":%.6f}", DEVICE_ID, latitude, longitude);
 
   struct httpc_connection_t *conn;
   char url[64];
   snprintf(url, sizeof(url), "/api/devices/%d/location", DEVICE_ID);
 
-  err_t err = httpc_get_file_dns(
+  err_t err = httpc_post_file_dns(
     SERVER_IP,
     SERVER_PORT,
     url,
     payload,
+    "application/json",
     NULL,
     NULL,
     NULL

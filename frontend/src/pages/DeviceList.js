@@ -27,20 +27,33 @@ function DeviceList() {
   return (
     <div>
       <h1>Device List</h1>
-      {devices.length === 0 ? (
-        <p>No devices found.</p>
-      ) : (
-        <ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Last seen</th>
+            <th>ID</th>
+            <th>Device Name</th>
+            <th>Status</th> {/* Assuming status might be relevant to devices */}
+            <th>Latitude</th>
+            <th>Longitude</th>
+          </tr>
+        </thead>
+        <tbody>
           {devices.map(device => (
-            <li key={device.id}>
-              {device.name} - Type: {device.type}, Status: {device.status}, 
-              Last seen: {device.last_latitude}, {device.last_longitude}
-            </li>
+            <tr key={device.id}>
+              <td>{new Date(device.last_seen).toLocaleString()}</td>
+              <td>{device.id}</td>
+              <td>{device.name}</td>
+              <td>{device.status}</td> {/* Assuming status is part of the device data */}
+              <td>{device.last_latitude}</td>
+              <td>{device.last_longitude}</td>
+            </tr>
           ))}
-        </ul>
-      )}
+        </tbody>
+      </table>
     </div>
-  );
+    );
+    
 }
 
 export default DeviceList;

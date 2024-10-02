@@ -27,10 +27,12 @@ function MapView() {
   if (error) return <div>{error}</div>;
 
   return (
-    <div>
-      <h1>Map View</h1>
-      <MapContainer center={[0, 0]} zoom={2} style={{ height: '500px', width: '100%' }}>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+    <div className="map-container">
+      <MapContainer center={[51.1657, 10.4515]} zoom={6} style={{ height: '100%', width: '100%' }}>
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
         {devices.map(device => (
           <Marker 
             key={device.id} 
