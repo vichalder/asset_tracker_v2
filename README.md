@@ -125,6 +125,7 @@ asset_tracker_v2/
 - Real-time device tracking
 - Historical data visualization
 - Geofencing capabilities
+- Geofence alert configuration
 - Support for both ESP32 and Cortex-M4 based GNSS devices
 
 ## Geofencing
@@ -134,6 +135,22 @@ The application supports geofencing:
 - Edit existing geofences
 - Delete geofences
 - View all current geofences
+
+## Geofence Alerts
+
+The application now supports configurable geofence alerts:
+- Configure alerts for specific devices and geofences
+- Set up alerts for when a device enters an "entering" geofence or exits an "exiting" geofence
+- Manage alert configurations through the Alert Configuration page
+
+To use the geofence alert feature:
+1. Navigate to the Alert Configuration page using the navbar
+2. Select a device from the dropdown list
+3. Select a geofence from the dropdown list
+4. The system will automatically check if the selected device's last known position triggers an alert for the selected geofence
+5. If an alert is triggered, it will be displayed on the page
+
+Note: The current implementation checks for alerts based on the device's last known position. For real-time alerts, you would need to implement a more sophisticated system that continuously monitors device positions and triggers alerts as they occur.
 
 ## Note
 
@@ -146,3 +163,9 @@ If you encounter any issues with device connectivity:
 2. Verify that the server IP/domain and port in the device code match your backend setup.
 3. Check that your devices have an active internet connection.
 4. Verify that the API endpoints in the backend match those used in the device code.
+
+For issues with geofence alerts:
+1. Ensure that the geofences table is properly set up in your database.
+2. Check that devices are regularly updating their positions in the database.
+3. Verify that the geofence checking logic in the AlertConfiguration component is working correctly.
+4. Make sure the frontend is correctly fetching and displaying device and geofence data.

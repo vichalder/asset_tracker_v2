@@ -24,3 +24,12 @@ CREATE TABLE IF NOT EXISTS geofences (
   radius DECIMAL(10, 2) NOT NULL,
   type ENUM('entering', 'exiting') NOT NULL DEFAULT 'exiting'
 );
+
+CREATE TABLE IF NOT EXISTS geofence_alerts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  geofence_id INT NOT NULL,
+  device_id INT NOT NULL,
+  alert_type ENUM('enter', 'exit') NOT NULL,
+  FOREIGN KEY (geofence_id) REFERENCES geofences(id),
+  FOREIGN KEY (device_id) REFERENCES devices(id)
+);

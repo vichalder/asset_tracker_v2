@@ -9,6 +9,7 @@ function Navbar() {
         <li><Link to="/map">Map View</Link></li>
         <li><Link to="/historical">Historical Data</Link></li>
         <li><Link to="/geofencing">Geofencing</Link></li>
+        <li><Link to="/alerts">Alert Configuration</Link></li>
       </ul>
     </nav>
   );
