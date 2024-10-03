@@ -12,7 +12,8 @@ router.get('/', async (req, res) => {
         lat: row.center_lat,
         lng: row.center_lng
       },
-      radius: row.radius
+      radius: row.radius,
+      type: row.type
     }));
     res.json(formattedGeofences);
   } catch (err) {
@@ -23,13 +24,13 @@ router.get('/', async (req, res) => {
 
 // Create a new geofence
 router.post('/', async (req, res) => {
-  const { center, radius } = req.body;
+  const { center, radius, type } = req.body;
   try {
     const [result] = await pool.query(
-      'INSERT INTO geofences (center_lat, center_lng, radius) VALUES (?, ?, ?)',
-      [center.lat, center.lng, radius]
+      'INSERT INTO geofences (center_lat, center_lng, radius, type) VALUES (?, ?, ?, ?)',
+      [center.lat, center.lng, radius, type]
     );
-    res.status(201).json({ id: result.insertId, center, radius });
+    res.status(201).json({ id: result.insertId, center, radius, type });
   } catch (err) {
     console.error('Error creating geofence:', err);
     res.status(500).json({ error: err.message });
@@ -39,9 +40,9 @@ router.post('/', async (req, res) => {
 // Update a geofence
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { center, radius } = req.body;
+  const { center, radius, type } = req.body;
   console.log('Received update request for geofence ID:', id);
-  console.log('Update data:', { center, radius });
+  console.log('Update data:', { center, radius, type });
 
   if (id === undefined) {
     console.error('Geofence ID is undefined');
@@ -50,8 +51,8 @@ router.put('/:id', async (req, res) => {
 
   try {
     const [result] = await pool.query(
-      'UPDATE geofences SET center_lat = ?, center_lng = ?, radius = ? WHERE id = ?',
-      [center.lat, center.lng, radius, id]
+      'UPDATE geofences SET center_lat = ?, center_lng = ?, radius = ?, type = ? WHERE id = ?',
+      [center.lat, center.lng, radius, type, id]
     );
     console.log('Update operation result:', result);
 
@@ -61,7 +62,7 @@ router.put('/:id', async (req, res) => {
     }
 
     console.log('Successfully updated geofence with ID:', id);
-    res.status(200).json({ id: parseInt(id), center, radius });
+    res.status(200).json({ id: parseInt(id), center, radius, type });
   } catch (err) {
     console.error('Error updating geofence:', err);
     res.status(500).json({ error: err.message });

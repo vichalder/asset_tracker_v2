@@ -33,6 +33,10 @@ const getDeviceIcon = (device) => {
   }
 };
 
+const getGeofenceColor = (type) => {
+  return type === 'entering' ? 'blue' : 'orange';
+};
+
 function HistoricalView() {
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
@@ -153,8 +157,13 @@ function HistoricalView() {
                   key={geofence.id} 
                   center={[parseFloat(geofence.center.lat) || 0, parseFloat(geofence.center.lng) || 0]} 
                   radius={parseFloat(geofence.radius) || 0} 
+                  pathOptions={{ color: getGeofenceColor(geofence.type) }}
                   id={geofence.id}
-                />
+                >
+                  <Popup>
+                    Type: {geofence.type}
+                  </Popup>
+                </Circle>
               )
             ))}
           </FeatureGroup>

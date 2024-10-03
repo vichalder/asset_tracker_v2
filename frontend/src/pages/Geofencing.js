@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, FeatureGroup, Circle } from 'react-leaflet';
+import { MapContainer, TileLayer, FeatureGroup, Circle, Tooltip } from 'react-leaflet';
 import { EditControl } from "react-leaflet-draw";
 import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
@@ -32,13 +32,14 @@ function Geofencing() {
   const handleCreated = async (e) => {
     const { layer } = e;
     const { _latlng, _mRadius } = layer;
-    const newGeofence = { center: _latlng, radius: _mRadius };
+    const newGeofence = { center: _latlng, radius: _mRadius, type: 'entering' };
     
     try {
       const response = await axios.post(`${API_BASE_URL}/geofences`, newGeofence);
       const createdGeofence = response.data;
       setGeofences(prevGeofences => [...prevGeofences, createdGeofence]);
       layer.options.id = createdGeofence.id;
+      layer.options.type = createdGeofence.type;
       console.log('Created geofence:', createdGeofence);
     } catch (err) {
       console.error('Error creating geofence:', err);
@@ -52,7 +53,8 @@ function Geofencing() {
     layers.eachLayer(async (layer) => {
       const { _latlng, _mRadius } = layer;
       const geofenceId = layer.options.id;
-      console.log('Editing geofence:', geofenceId, 'with latlng:', _latlng, 'and radius:', _mRadius);
+      const geofenceType = layer.options.type;
+      console.log('Editing geofence:', geofenceId, 'with latlng:', _latlng, 'radius:', _mRadius, 'and type:', geofenceType);
       
       if (geofenceId === undefined) {
         console.error('Geofence ID is undefined for layer:', layer);
@@ -60,7 +62,7 @@ function Geofencing() {
         return;
       }
 
-      const updatedGeofence = { center: _latlng, radius: _mRadius };
+      const updatedGeofence = { center: _latlng, radius: _mRadius, type: geofenceType };
       
       try {
         const response = await axios.put(`${API_BASE_URL}/geofences/${geofenceId}`, updatedGeofence);
@@ -99,6 +101,27 @@ function Geofencing() {
     });
   };
 
+  const getGeofenceColor = (type) => {
+    return type === 'entering' ? 'blue' : 'orange';
+  };
+
+  const toggleGeofenceType = async (geofence) => {
+    const newType = geofence.type === 'entering' ? 'exiting' : 'entering';
+    const updatedGeofence = { ...geofence, type: newType };
+    
+    try {
+      const response = await axios.put(`${API_BASE_URL}/geofences/${geofence.id}`, updatedGeofence);
+      console.log('Update response:', response.data);
+      setGeofences(prevGeofences => 
+        prevGeofences.map(g => g.id === geofence.id ? { ...g, type: newType } : g)
+      );
+      console.log('Successfully updated geofence type:', geofence.id);
+    } catch (err) {
+      console.error('Error updating geofence type:', err);
+      setError('Error updating geofence type. Please try again.');
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
 
@@ -123,6 +146,7 @@ function Geofencing() {
                 polyline: false,
                 marker: false,
                 circlemarker: false,
+                circle: { shapeOptions: { color: 'blue' } }
               }}
             />
             {geofences.map((geofence) => (
@@ -131,8 +155,15 @@ function Geofencing() {
                   key={geofence.id} 
                   center={[parseFloat(geofence.center.lat) || 0, parseFloat(geofence.center.lng) || 0]} 
                   radius={parseFloat(geofence.radius) || 0} 
+                  pathOptions={{ color: getGeofenceColor(geofence.type) }}
                   id={geofence.id}
-                />
+                  type={geofence.type}
+                >
+                  <Tooltip permanent>
+                    <span>{geofence.type}</span>
+                    <button onClick={() => toggleGeofenceType(geofence)}>Toggle Type</button>
+                  </Tooltip>
+                </Circle>
               )
             ))}
           </FeatureGroup>
@@ -146,7 +177,9 @@ function Geofencing() {
               <li key={geofence.id}>
                 ID: {geofence.id} - 
                 Center: {parseFloat(geofence.center.lat).toFixed(6)}, {parseFloat(geofence.center.lng).toFixed(6)} - 
-                Radius: {parseFloat(geofence.radius).toFixed(2)}m
+                Radius: {parseFloat(geofence.radius).toFixed(2)}m - 
+                Type: {geofence.type}
+                <button onClick={() => toggleGeofenceType(geofence)}>Toggle Type</button>
               </li>
             )
           ))}

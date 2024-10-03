@@ -21,5 +21,6 @@ CREATE TABLE IF NOT EXISTS geofences (
   id INT AUTO_INCREMENT PRIMARY KEY,
   center_lat DECIMAL(10, 8) NOT NULL,
   center_lng DECIMAL(11, 8) NOT NULL,
-  radius DECIMAL(10, 2) NOT NULL
+  radius DECIMAL(10, 2) NOT NULL,
+  type ENUM('entering', 'exiting') NOT NULL DEFAULT 'exiting'
 );
