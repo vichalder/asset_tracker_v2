@@ -40,12 +40,28 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { center, radius } = req.body;
+  console.log('Received update request for geofence ID:', id);
+  console.log('Update data:', { center, radius });
+
+  if (id === undefined) {
+    console.error('Geofence ID is undefined');
+    return res.status(400).json({ error: 'Geofence ID is required' });
+  }
+
   try {
-    await pool.query(
+    const [result] = await pool.query(
       'UPDATE geofences SET center_lat = ?, center_lng = ?, radius = ? WHERE id = ?',
       [center.lat, center.lng, radius, id]
     );
-    res.status(200).json({ id, center, radius });
+    console.log('Update operation result:', result);
+
+    if (result.affectedRows === 0) {
+      console.log('No geofence found with ID:', id);
+      return res.status(404).json({ error: 'Geofence not found' });
+    }
+
+    console.log('Successfully updated geofence with ID:', id);
+    res.status(200).json({ id: parseInt(id), center, radius });
   } catch (err) {
     console.error('Error updating geofence:', err);
     res.status(500).json({ error: err.message });
