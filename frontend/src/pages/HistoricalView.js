@@ -161,7 +161,7 @@ function HistoricalView() {
                   id={geofence.id}
                 >
                   <Popup>
-                    Type: {geofence.type}
+                    Geofence ID: {geofence.id}
                   </Popup>
                 </Circle>
               )
