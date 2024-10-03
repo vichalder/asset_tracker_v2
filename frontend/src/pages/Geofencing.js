@@ -161,7 +161,6 @@ function Geofencing() {
                 >
                   <Tooltip permanent>
                     <span>Geofence ID: {geofence.id}</span>
-                    <button onClick={() => toggleGeofenceType(geofence)}>Toggle Type</button>
                   </Tooltip>
                 </Circle>
               )

@@ -5,7 +5,7 @@ const { pool } = require('../db');
 // Get all geofences
 router.get('/', async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM geofences');
+    const [rows] = await pool.query('SELECT * FROM geofences ORDER BY id');
     const formattedGeofences = rows.map(row => ({
       id: row.id,
       center: {
@@ -26,11 +26,21 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const { center, radius, type } = req.body;
   try {
+    // Find the lowest available ID
+    const [rows] = await pool.query('SELECT id FROM geofences ORDER BY id');
+    let newId = 1;
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].id !== newId) {
+        break;
+      }
+      newId++;
+    }
+
     const [result] = await pool.query(
-      'INSERT INTO geofences (center_lat, center_lng, radius, type) VALUES (?, ?, ?, ?)',
-      [center.lat, center.lng, radius, type]
+      'INSERT INTO geofences (id, center_lat, center_lng, radius, type) VALUES (?, ?, ?, ?, ?)',
+      [newId, center.lat, center.lng, radius, type]
     );
-    res.status(201).json({ id: result.insertId, center, radius, type });
+    res.status(201).json({ id: newId, center, radius, type });
   } catch (err) {
     console.error('Error creating geofence:', err);
     res.status(500).json({ error: err.message });
