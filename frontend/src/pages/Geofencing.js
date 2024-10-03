@@ -5,6 +5,8 @@ import axios from 'axios';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
+const API_BASE_URL = 'http://localhost:3000/api';
+
 function Geofencing() {
   const [geofences, setGeofences] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,8 +15,8 @@ function Geofencing() {
   useEffect(() => {
     const fetchGeofences = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/api/geofences');
-        console.log('Fetched geofences:', response.data); // Log the fetched data
+        const response = await axios.get(`${API_BASE_URL}/geofences`);
+        console.log('Fetched geofences:', response.data);
         setGeofences(response.data);
         setLoading(false);
       } catch (err) {
@@ -33,7 +35,7 @@ function Geofencing() {
     const newGeofence = { center: _latlng, radius: _mRadius };
     
     try {
-      const response = await axios.post('http://localhost:3000/api/geofences', newGeofence);
+      const response = await axios.post(`${API_BASE_URL}/geofences`, newGeofence);
       setGeofences([...geofences, response.data]);
     } catch (err) {
       console.error('Error creating geofence:', err);
@@ -48,7 +50,7 @@ function Geofencing() {
       const updatedGeofence = { center: _latlng, radius: _mRadius };
       
       try {
-        await axios.put(`http://localhost:3000/api/geofences/${_leaflet_id}`, updatedGeofence);
+        await axios.put(`${API_BASE_URL}/geofences/${_leaflet_id}`, updatedGeofence);
         setGeofences(geofences.map(g => g.id === _leaflet_id ? { ...g, ...updatedGeofence } : g));
       } catch (err) {
         console.error('Error updating geofence:', err);
@@ -63,7 +65,7 @@ function Geofencing() {
       const { _leaflet_id } = layer;
       
       try {
-        await axios.delete(`http://localhost:3000/api/geofences/${_leaflet_id}`);
+        await axios.delete(`${API_BASE_URL}/geofences/${_leaflet_id}`);
         setGeofences(geofences.filter(g => g.id !== _leaflet_id));
       } catch (err) {
         console.error('Error deleting geofence:', err);
@@ -102,8 +104,8 @@ function Geofencing() {
               geofence && geofence.center && (
                 <Circle 
                   key={geofence.id} 
-                  center={[geofence.center.lat || 0, geofence.center.lng || 0]} 
-                  radius={geofence.radius || 0} 
+                  center={[parseFloat(geofence.center.lat) || 0, parseFloat(geofence.center.lng) || 0]} 
+                  radius={parseFloat(geofence.radius) || 0} 
                 />
               )
             ))}
@@ -116,8 +118,8 @@ function Geofencing() {
           {geofences.map((geofence) => (
             geofence && geofence.center && (
               <li key={geofence.id}>
-                Center: {geofence.center.lat.toFixed(6)}, {geofence.center.lng.toFixed(6)} - 
-                Radius: {geofence.radius.toFixed(2)}m
+                Center: {parseFloat(geofence.center.lat).toFixed(6)}, {parseFloat(geofence.center.lng).toFixed(6)} - 
+                Radius: {parseFloat(geofence.radius).toFixed(2)}m
               </li>
             )
           ))}

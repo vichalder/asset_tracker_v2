@@ -6,8 +6,17 @@ const { pool } = require('../db');
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM geofences');
-    res.json(rows);
+    const formattedGeofences = rows.map(row => ({
+      id: row.id,
+      center: {
+        lat: row.center_lat,
+        lng: row.center_lng
+      },
+      radius: row.radius
+    }));
+    res.json(formattedGeofences);
   } catch (err) {
+    console.error('Error fetching geofences:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -22,6 +31,7 @@ router.post('/', async (req, res) => {
     );
     res.status(201).json({ id: result.insertId, center, radius });
   } catch (err) {
+    console.error('Error creating geofence:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -37,6 +47,7 @@ router.put('/:id', async (req, res) => {
     );
     res.status(200).json({ id, center, radius });
   } catch (err) {
+    console.error('Error updating geofence:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -48,6 +59,7 @@ router.delete('/:id', async (req, res) => {
     await pool.query('DELETE FROM geofences WHERE id = ?', [id]);
     res.status(200).json({ message: 'Geofence deleted successfully' });
   } catch (err) {
+    console.error('Error deleting geofence:', err);
     res.status(500).json({ error: err.message });
   }
 });
