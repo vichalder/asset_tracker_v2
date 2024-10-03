@@ -55,8 +55,23 @@ router.put('/:id', async (req, res) => {
 // Delete a geofence 
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
+  console.log('Received delete request for geofence ID:', id);
+
+  if (id === undefined) {
+    console.error('Geofence ID is undefined');
+    return res.status(400).json({ error: 'Geofence ID is required' });
+  }
+
   try {
-    await pool.query('DELETE FROM geofences WHERE id = ?', [id]);
+    const [result] = await pool.query('DELETE FROM geofences WHERE id = ?', [id]);
+    console.log('Delete operation result:', result);
+
+    if (result.affectedRows === 0) {
+      console.log('No geofence found with ID:', id);
+      return res.status(404).json({ error: 'Geofence not found' });
+    }
+
+    console.log('Successfully deleted geofence with ID:', id);
     res.status(200).json({ message: 'Geofence deleted successfully' });
   } catch (err) {
     console.error('Error deleting geofence:', err);

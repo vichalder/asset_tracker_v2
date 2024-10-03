@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, FeatureGroup, Circle } from 'react-leaflet';
 import { EditControl } from "react-leaflet-draw";
 import axios from 'axios';
@@ -11,6 +11,7 @@ function Geofencing() {
   const [geofences, setGeofences] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const leafletToGeofenceIds = useRef({});
 
   useEffect(() => {
     const fetchGeofences = async () => {
@@ -36,7 +37,10 @@ function Geofencing() {
     
     try {
       const response = await axios.post(`${API_BASE_URL}/geofences`, newGeofence);
-      setGeofences([...geofences, response.data]);
+      const createdGeofence = response.data;
+      setGeofences(prevGeofences => [...prevGeofences, createdGeofence]);
+      leafletToGeofenceIds.current[layer._leaflet_id] = createdGeofence.id;
+      console.log('Created geofence mapping:', layer._leaflet_id, '->', createdGeofence.id);
     } catch (err) {
       console.error('Error creating geofence:', err);
       setError('Error creating geofence. Please try again.');
@@ -46,12 +50,15 @@ function Geofencing() {
   const handleEdited = async (e) => {
     const { layers } = e;
     layers.eachLayer(async (layer) => {
-      const { _leaflet_id, _latlng, _mRadius } = layer;
+      const { _latlng, _mRadius, _leaflet_id } = layer;
+      const geofenceId = leafletToGeofenceIds.current[_leaflet_id];
       const updatedGeofence = { center: _latlng, radius: _mRadius };
       
       try {
-        await axios.put(`${API_BASE_URL}/geofences/${_leaflet_id}`, updatedGeofence);
-        setGeofences(geofences.map(g => g.id === _leaflet_id ? { ...g, ...updatedGeofence } : g));
+        await axios.put(`${API_BASE_URL}/geofences/${geofenceId}`, updatedGeofence);
+        setGeofences(prevGeofences => 
+          prevGeofences.map(g => g.id === geofenceId ? { ...g, ...updatedGeofence } : g)
+        );
       } catch (err) {
         console.error('Error updating geofence:', err);
         setError('Error updating geofence. Please try again.');
@@ -63,10 +70,20 @@ function Geofencing() {
     const { layers } = e;
     layers.eachLayer(async (layer) => {
       const { _leaflet_id } = layer;
+      const geofenceId = leafletToGeofenceIds.current[_leaflet_id];
+      console.log('Deleting geofence:', _leaflet_id, '->', geofenceId);
+      
+      if (geofenceId === undefined) {
+        console.error('Geofence ID is undefined for Leaflet ID:', _leaflet_id);
+        setError('Error deleting geofence: ID not found');
+        return;
+      }
       
       try {
-        await axios.delete(`${API_BASE_URL}/geofences/${_leaflet_id}`);
-        setGeofences(geofences.filter(g => g.id !== _leaflet_id));
+        await axios.delete(`${API_BASE_URL}/geofences/${geofenceId}`);
+        setGeofences(prevGeofences => prevGeofences.filter(g => g.id !== geofenceId));
+        delete leafletToGeofenceIds.current[_leaflet_id];
+        console.log('Successfully deleted geofence:', geofenceId);
       } catch (err) {
         console.error('Error deleting geofence:', err);
         setError('Error deleting geofence. Please try again.');
@@ -106,6 +123,12 @@ function Geofencing() {
                   key={geofence.id} 
                   center={[parseFloat(geofence.center.lat) || 0, parseFloat(geofence.center.lng) || 0]} 
                   radius={parseFloat(geofence.radius) || 0} 
+                  ref={(ref) => {
+                    if (ref) {
+                      leafletToGeofenceIds.current[ref._leaflet_id] = geofence.id;
+                      console.log('Set geofence mapping:', ref._leaflet_id, '->', geofence.id);
+                    }
+                  }}
                 />
               )
             ))}
@@ -118,6 +141,7 @@ function Geofencing() {
           {geofences.map((geofence) => (
             geofence && geofence.center && (
               <li key={geofence.id}>
+                ID: {geofence.id} - 
                 Center: {parseFloat(geofence.center.lat).toFixed(6)}, {parseFloat(geofence.center.lng).toFixed(6)} - 
                 Radius: {parseFloat(geofence.radius).toFixed(2)}m
               </li>
