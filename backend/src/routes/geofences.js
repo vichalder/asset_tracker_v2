@@ -49,15 +49,36 @@ router.get('/:id', async (req, res) => {
 // Create a new geofence
 router.post('/', async (req, res) => {
   const { center, radius, type } = req.body;
+  const connection = await pool.getConnection();
+  
   try {
-    const [result] = await pool.query(
-      'INSERT INTO geofences (center_lat, center_lng, radius, type) VALUES (?, ?, ?, ?)',
-      [center.lat, center.lng, radius, type]
+    await connection.beginTransaction();
+
+    // Find the lowest available ID starting from 1
+    const [rows] = await connection.query(`
+      SELECT COALESCE(MIN(t1.id + 1), 1) AS next_id
+      FROM geofences t1
+      LEFT JOIN geofences t2 ON t1.id + 1 = t2.id
+      WHERE t2.id IS NULL
+    `);
+    
+    const nextId = rows[0].next_id;
+
+    // Insert the new geofence with the found ID
+    const [result] = await connection.query(
+      'INSERT INTO geofences (id, center_lat, center_lng, radius, type) VALUES (?, ?, ?, ?, ?)',
+      [nextId, center.lat, center.lng, radius, type]
     );
-    res.status(201).json({ id: result.insertId, center, radius, type });
+
+    await connection.commit();
+    
+    res.status(201).json({ id: nextId, center, radius, type });
   } catch (err) {
+    await connection.rollback();
     console.error('Error creating geofence:', err);
     res.status(500).json({ error: err.message });
+  } finally {
+    connection.release();
   }
 });
 
