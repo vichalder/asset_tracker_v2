@@ -37,6 +37,16 @@ const getGeofenceColor = (type) => {
   return type === 'entering' ? 'blue' : 'orange';
 };
 
+// New function to create a numbered icon
+const createNumberedIcon = (number) => {
+  return L.divIcon({
+    className: 'custom-numbered-icon',
+    html: `<div style="background-color: #2196F3; color: white; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: bold;">${number}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+};
+
 function HistoricalView() {
   const [devices, setDevices] = useState([]);
   const [selectedDevice, setSelectedDevice] = useState(null);
@@ -82,9 +92,24 @@ function HistoricalView() {
   const fetchHistoricalData = async (deviceId) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/devices/${deviceId}/history`);
-      setHistoricalData(response.data);
-      adjustMapView(response.data);
+      
+      console.log('Raw historical data:', response.data);
+      
+      // Sort historical data by timestamp
+      const sortedData = response.data.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      
+      // Add continuous numbering to all entries
+      const numberedData = sortedData.map((item, index) => ({
+        ...item,
+        orderNumber: index + 1
+      }));
+      
+      console.log('Processed historical data:', numberedData);
+      
+      setHistoricalData(numberedData);
+      adjustMapView(numberedData);
     } catch (err) {
+      console.error('Error fetching historical data:', err);
       setError('Error fetching historical data. Please try again later.');
     }
   };
@@ -136,16 +161,19 @@ function HistoricalView() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           {positions.length > 0 && <Polyline positions={positions} />}
-          {historicalData.map((point, index) => {
+          {historicalData.map((point) => {
             const device = devices.find(d => d.id === selectedDevice);
             return (
               <Marker 
-                key={index} 
+                key={`${point.orderNumber}-${point.timestamp}`}
                 position={[point.latitude, point.longitude]}
-                icon={device ? getDeviceIcon(device) : DefaultIcon}
+                icon={createNumberedIcon(point.orderNumber)}
               >
                 <Popup>
-                  Timestamp: {new Date(point.timestamp).toLocaleString()}
+                  Order: {point.orderNumber}<br />
+                  Timestamp: {new Date(point.timestamp).toLocaleString()}<br />
+                  Latitude: {point.latitude}<br />
+                  Longitude: {point.longitude}
                 </Popup>
               </Marker>
             );
