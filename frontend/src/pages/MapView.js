@@ -63,6 +63,7 @@ function MapView() {
 
   return (
     <div className="map-container">
+      <h1>Map View</h1>
       <MapContainer center={[55.828282, 10.605460]} zoom={7} style={{ height: '100%', width: '100%' }}>
         <TileLayer
           url="https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=jqMrtdwJOEd6ITEcglsi"

@@ -25,6 +25,9 @@ function App() {
             <li>
               <Link to="/geofencing" className={window.location.pathname === '/geofencing' ? 'active' : ''}>Geofencing</Link>
             </li>
+            <li>
+              <Link to="/alerts" className={window.location.pathname === '/alerts' ? 'active' : ''}>Alerts</Link>
+            </li>
           </ul>
         </nav>
         <main className="content">
@@ -33,6 +36,7 @@ function App() {
             <Route path="/map" element={<MapView />} />
             <Route path="/historical" element={<HistoricalView />} />
             <Route path="/geofencing" element={<Geofencing />} />
+            <Route path="/alerts" element={<AlertConfiguration />} />
           </Routes>
         </main>
       </div>
