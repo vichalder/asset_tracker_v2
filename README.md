@@ -120,6 +120,29 @@ asset_tracker_v2/
    - `DEVICE_ID` macro with a unique ID for this device
 5. Compile and flash the code to your Cortex-M4 device.
 
+## Deployment
+
+### Frontend Deployment (Netlify)
+
+1. Push your code to a Git repository (GitHub, GitLab, or Bitbucket)
+
+2. Connect your repository to Netlify:
+   - Sign up or log in to [Netlify](https://www.netlify.com/)
+   - Click "New site from Git"
+   - Choose your repository
+   - Configure build settings:
+     - Base directory: `frontend`
+     - Build command: `npm run build`
+     - Publish directory: `build`
+
+3. Environment Variables:
+   - In Netlify dashboard, go to Site settings > Build & deploy > Environment
+   - Add any required environment variables
+
+The site will automatically deploy when you push changes to your repository.
+
+Note: The frontend is configured to handle client-side routing through the `netlify.toml` configuration file.
+
 ## Features
 
 - Real-time device tracking

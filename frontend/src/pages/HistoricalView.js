@@ -15,7 +15,7 @@ let DefaultIcon = L.icon({
   iconAnchor: [12, 41],
 });
 
-const getDeviceIcon = (device) => {
+/* const getDeviceIcon = (device) => {
   if (device.type === 'TypeA') {
     return L.icon({
       iconUrl: 'path/to/your/custom-icon-for-TypeA.png',
@@ -31,7 +31,7 @@ const getDeviceIcon = (device) => {
   } else {
     return DefaultIcon;
   }
-};
+}; */
 
 const getGeofenceColor = (type) => {
   return type === 'entering' ? 'blue' : 'orange';
